@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Workplaces - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-building"></i> Workplaces</h1>
+    <a href="{{ url_for('admin.create_workplace') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add Workplace
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if workplaces %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Address</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for workplace in workplaces %}
+                    <tr>
+                        <td><strong>{{ workplace.name }}</strong></td>
+                        <td>{{ workplace.description or 'No description' }}</td>
+                        <td>{{ workplace.address or 'No address' }}</td>
+                        <td>{{ workplace.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <a href="{{ url_for('admin.edit_workplace', workplace_id=workplace.id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <form method="POST" action="{{ url_for('admin.delete_workplace', workplace_id=workplace.id) }}" 
+                                  class="d-inline" onsubmit="return confirm('Are you sure?')">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-building fa-3x text-muted mb-3"></i>
+            <h5>No workplaces found</h5>
+            <p class="text-muted">Create your first workplace to get started.</p>
+            <a href="{{ url_for('admin.create_workplace') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Workplace
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

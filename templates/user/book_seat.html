@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Book Seat{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-chair"></i> Book a Seat</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" id="bookingForm">
+                    <div class="mb-3">
+                        <label for="timeframe_id" class="form-label">Time Frame *</label>
+                        <select class="form-select" id="timeframe_id" name="timeframe_id" required>
+                            <option value="">Select a time frame</option>
+                            {% for timeframe in timeframes %}
+                            {% if not timeframe.is_expired() %}
+                            <option value="{{ timeframe.id }}">
+                                {{ timeframe.name }} - {{ timeframe.date }} ({{ timeframe.start_time }} - {{ timeframe.end_time }})
+                                - {{ timeframe.get_current_bookings_count() }}/{{ timeframe.max_users }} booked
+                            </option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="workplace_id" class="form-label">Workplace *</label>
+                        <select class="form-select" id="workplace_id" required>
+                            <option value="">Select a workplace</option>
+                            {% for workplace in workplaces %}
+                            <option value="{{ workplace.id }}">{{ workplace.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="hall_id" class="form-label">Hall *</label>
+                        <select class="form-select" id="hall_id" required disabled>
+                            <option value="">Select a hall</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="seat_id" class="form-label">Available Seats *</label>
+                        <select class="form-select" id="seat_id" name="seat_id" required disabled>
+                            <option value="">Select a seat</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" id="bookBtn" disabled>
+                        <i class="fas fa-calendar-plus"></i> Book Seat
+                    </button>
+                    <a href="{{ url_for('user.dashboard') }}" class="btn btn-secondary ms-2">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-info-circle"></i> Booking Rules</h6>
+            </div>
+            <div class="card-body">
+                <ul class="text-sm">
+                    <li>You can only book one seat per time frame</li>
+                    <li>Seats are assigned on a first-come, first-served basis</li>
+                    <li>You'll receive an email confirmation</li>
+                    <li>Please arrive on time for your booking</li>
+                    <li>You'll be notified when your booking expires</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="fas fa-clock"></i> Your Current Bookings</h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted text-sm">Check your dashboard to see active bookings and avoid double-booking.</p>
+                <a href="{{ url_for('user.dashboard') }}" class="btn btn-outline-primary btn-sm">
+                    View Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    $('#workplace_id').change(function() {
+        const workplaceId = $(this).val();
+        if (workplaceId) {
+            $.get(`/booking/api/halls/${workplaceId}`, function(data) {
+                $('#hall_id').empty().append('<option value="">Select a hall</option>');
+                data.forEach(function(hall) {
+                    $('#hall_id').append(`<option value="${hall.id}">${hall.name} (${hall.capacity} seats)</option>`);
+                });
+                $('#hall_id').prop('disabled', false);
+            });
+        } else {
+            $('#hall_id').prop('disabled', true).empty().append('<option value="">Select a hall</option>');
+            $('#seat_id').prop('disabled', true).empty().append('<option value="">Select a seat</option>');
+        }
+    });
+    
+    $('#hall_id, #timeframe_id').change(function() {
+        const hallId = $('#hall_id').val();
+        const timeframeId = $('#timeframe_id').val();
+        
+        if (hallId && timeframeId) {
+            $.get(`/booking/api/seats-by-hall/${hallId}/${timeframeId}`, function(data) {
+                $('#seat_id').empty().append('<option value="">Select a seat</option>');
+                const availableSeats = data.filter(seat => seat.available);
+                
+                if (availableSeats.length === 0) {
+                    $('#seat_id').append('<option value="">No seats available</option>');
+                } else {
+                    availableSeats.forEach(function(seat) {
+                        $('#seat_id').append(`<option value="${seat.id}">${seat.seat_number}</option>`);
+                    });
+                }
+                $('#seat_id').prop('disabled', false);
+            });
+        }
+    });
+    
+    $('#seat_id').change(function() {
+        $('#bookBtn').prop('disabled', !$(this).val());
+    });
+});
+</script>
+{% endblock %}

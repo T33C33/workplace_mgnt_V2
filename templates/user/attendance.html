@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}My Attendance{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-clipboard-check"></i> My Attendance</h1>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if attendance_records %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Hall</th>
+                        <th>Seat</th>
+                        <th>Time Frame</th>
+                        <th>Check In</th>
+                        <th>Check Out</th>
+                        <th>Status</th>
+                        <th>Duration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attendance, booking, seat, hall, timeframe in attendance_records %}
+                    <tr>
+                        <td>{{ timeframe.date }}</td>
+                        <td>{{ hall.name }}</td>
+                        <td><strong>{{ seat.seat_number }}</strong></td>
+                        <td>{{ timeframe.start_time }} - {{ timeframe.end_time }}</td>
+                        <td>
+                            {% if attendance.check_in_time %}
+                                {{ attendance.check_in_time.strftime('%H:%M') }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if attendance.check_out_time %}
+                                {{ attendance.check_out_time.strftime('%H:%M') }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if attendance.status == 'present' else 'warning' if attendance.status == 'pending' else 'danger' }}">
+                                {{ attendance.status.title() }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if attendance.check_in_time and attendance.check_out_time %}
+                                {% set duration = attendance.check_out_time - attendance.check_in_time %}
+                                {{ duration.seconds // 3600 }}h {{ (duration.seconds % 3600) // 60 }}m
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+            <h5>No attendance records</h5>
+            <p class="text-muted">Your attendance records will appear here after you make bookings and check in.</p>
+            <a href="{{ url_for('user.book_seat') }}" class="btn btn-primary">
+                <i class="fas fa-chair"></i> Book a Seat
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

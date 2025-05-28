@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Halls - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-door-open"></i> Halls</h1>
+    <a href="{{ url_for('admin.create_hall') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add Hall
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if halls %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Hall Name</th>
+                        <th>Workplace</th>
+                        <th>Capacity</th>
+                        <th>Description</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hall, workplace in halls %}
+                    <tr>
+                        <td><strong>{{ hall.name }}</strong></td>
+                        <td>{{ workplace.name }}</td>
+                        <td>{{ hall.capacity }} seats</td>
+                        <td>{{ hall.description or 'No description' }}</td>
+                        <td>{{ hall.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info" onclick="viewSeats({{ hall.id }})">
+                                <i class="fas fa-chair"></i> View Seats
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-door-open fa-3x text-muted mb-3"></i>
+            <h5>No halls found</h5>
+            <p class="text-muted">Create your first hall to get started.</p>
+            <a href="{{ url_for('admin.create_hall') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Hall
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Seats Modal -->
+<div class="modal fade" id="seatsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Hall Seats</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="seatsContent">
+                <!-- Seats will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function viewSeats(hallId) {
+    // This would require additional backend endpoint to fetch seats
+    $('#seatsModal').modal('show');
+    $('#seatsContent').html('<p>Seats view functionality would be implemented here.</p>');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Create Hall - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-plus"></i> Create Hall</h1>
+    <a href="{{ url_for('admin.halls') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Halls
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="workplace_id" class="form-label">Workplace *</label>
+                        <select class="form-select" id="workplace_id" name="workplace_id" required>
+                            <option value="">Select a workplace</option>
+                            {% for workplace in workplaces %}
+                            <option value="{{ workplace.id }}">{{ workplace.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Hall Name *</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="capacity" class="form-label">Capacity (Number of Seats) *</label>
+                        <input type="number" class="form-control" id="capacity" name="capacity" min="1" max="500" required>
+                        <div class="form-text">This will automatically create the specified number of seats</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Create Hall
+                    </button>
+                    <a href="{{ url_for('admin.halls') }}" class="btn btn-secondary ms-2">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

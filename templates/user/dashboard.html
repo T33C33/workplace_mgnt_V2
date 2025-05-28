@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}User Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-tachometer-alt"></i> Welcome, {{ current_user.full_name }}!</h1>
+    <a href="{{ url_for('user.book_seat') }}" class="btn btn-primary">
+        <i class="fas fa-chair"></i> Book a Seat
+    </a>
+</div>
+
+<!-- Current Bookings -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-calendar-check"></i> Your Active Bookings</h5>
+            </div>
+            <div class="card-body">
+                {% if user_bookings %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Workplace</th>
+                                <th>Hall</th>
+                                <th>Seat</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking, seat, hall, workplace, timeframe in user_bookings %}
+                            <tr>
+                                <td>{{ workplace.name }}</td>
+                                <td>{{ hall.name }}</td>
+                                <td><strong>{{ seat.seat_number }}</strong></td>
+                                <td>{{ timeframe.date }}</td>
+                                <td>{{ timeframe.start_time }} - {{ timeframe.end_time }}</td>
+                                <td>
+                                    {% if timeframe.is_expired() %}
+                                        <span class="badge bg-secondary">Expired</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if not timeframe.is_expired() %}
+                                    <form method="POST" action="{{ url_for('user.cancel_booking', booking_id=booking.id) }}" 
+                                          class="d-inline" onsubmit="return confirm('Are you sure you want to cancel this booking?')">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-times"></i> Cancel
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                    <h5>No active bookings</h5>
+                    <p class="text-muted">You don't have any active seat bookings.</p>
+                    <a href="{{ url_for('user.book_seat') }}" class="btn btn-primary">
+                        <i class="fas fa-chair"></i> Book Your First Seat
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Attendance -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-clipboard-check"></i> Recent Attendance</h5>
+            </div>
+            <div class="card-body">
+                {% if attendance_records %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Hall</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Check In</th>
+                                <th>Check Out</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for attendance, booking, seat, hall, timeframe in attendance_records %}
+                            <tr>
+                                <td>{{ hall.name }}</td>
+                                <td>{{ timeframe.date }}</td>
+                                <td>{{ timeframe.start_time }} - {{ timeframe.end_time }}</td>
+                                <td>{{ attendance.check_in_time.strftime('%H:%M') if attendance.check_in_time else '-' }}</td>
+                                <td>{{ attendance.check_out_time.strftime('%H:%M') if attendance.check_out_time else '-' }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if attendance.status == 'present' else 'warning' if attendance.status == 'pending' else 'danger' }}">
+                                        {{ attendance.status.title() }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('user.attendance') }}" class="btn btn-outline-primary">
+                        View All Attendance Records
+                    </a>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                    <h5>No attendance records</h5>
+                    <p class="text-muted">Your attendance records will appear here after you make bookings.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
